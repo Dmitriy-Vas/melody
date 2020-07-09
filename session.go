@@ -20,6 +20,38 @@ type Session struct {
 	rwmutex *sync.RWMutex
 }
 
+// Conn returns underlying websocket connection
+func (s *Session) Conn() *websocket.Conn {
+	return s.conn
+}
+
+// Deadline always returns that there is no deadline (ok==false),
+func (s *Session) Deadline() (deadline time.Time, ok bool) {
+	return
+}
+
+// Done always returns nil (chan which will wait forever),
+func (s *Session) Done() <-chan struct{} {
+	return nil
+}
+
+// Err always returns nil
+func (s *Session) Err() error {
+	return nil
+}
+
+// Value returns the value associated with this context for key, or nil
+func (s *Session) Value(key interface{}) interface{} {
+	if key == nil {
+		return nil
+	}
+	if keyStr, ok := key.(string); ok {
+		val, _ := s.Get(keyStr)
+		return val
+	}
+	return nil
+}
+
 func (s *Session) writeMessage(message *envelope) {
 	if s.closed() {
 		s.melody.errorHandler(s, errors.New("tried to write to closed a session"))
@@ -48,20 +80,20 @@ func (s *Session) writeRaw(message *envelope) error {
 	return nil
 }
 
-func (s *Session) closed() bool {
+func (s *Session) closed() (b bool) {
 	s.rwmutex.RLock()
-	defer s.rwmutex.RUnlock()
-
-	return !s.open
+	b = !s.open
+	s.rwmutex.RUnlock()
+	return
 }
 
 func (s *Session) close() {
 	if !s.closed() {
 		s.rwmutex.Lock()
-		s.open = false
-		s.conn.Close()
 		close(s.output)
+		s.open = false
 		s.rwmutex.Unlock()
+		s.conn.Close()
 	}
 }
 
@@ -187,20 +219,20 @@ func (s *Session) CloseWithMsg(msg []byte) error {
 // Set is used to store a new key/value pair exclusivelly for this session.
 // It also lazy initializes s.Keys if it was not used previously.
 func (s *Session) Set(key string, value interface{}) {
+	s.rwmutex.Lock()
 	if s.Keys == nil {
 		s.Keys = make(map[string]interface{})
 	}
-
 	s.Keys[key] = value
+	s.rwmutex.Unlock()
 }
 
 // Get returns the value for the given key, ie: (value, true).
 // If the value does not exists it returns (nil, false)
 func (s *Session) Get(key string) (value interface{}, exists bool) {
-	if s.Keys != nil {
-		value, exists = s.Keys[key]
-	}
-
+	s.rwmutex.RLock()
+	value, exists = s.Keys[key]
+	s.rwmutex.RUnlock()
 	return
 }
 

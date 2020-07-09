@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/dmitriy-vas/melody/v1"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/olahol/melody.v1"
 	"net/http"
 )
 
