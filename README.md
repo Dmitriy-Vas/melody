@@ -1,8 +1,8 @@
 # melody
 
-[![Build Status](https://travis-ci.org/olahol/melody.svg)](https://travis-ci.org/olahol/melody)
+[![Build Status](https://travis-ci.org/Dmitriy-Vas/melody.svg)](https://travis-ci.org/Dmitriy-Vas/melody)
 [![Coverage Status](https://img.shields.io/coveralls/olahol/melody.svg?style=flat)](https://coveralls.io/r/olahol/melody)
-[![GoDoc](https://godoc.org/github.com/olahol/melody?status.svg)](https://godoc.org/github.com/olahol/melody)
+[![GoDoc](https://godoc.org/github.com/Dmitriy-Vas/melody?status.svg)](https://godoc.org/github.com/Dmitriy-Vas/melody)
 
 > :notes: Minimalist websocket framework for Go.
 
@@ -19,12 +19,12 @@ your way so you can write real-time apps. Features include:
 ## Install
 
 ```bash
-go get -u github.com/dmitriy-vas/melody/v1
+go get -u github.com/Dmitriy-Vas/melody/v1
 ```
 
-## [Example: chat](https://github.com/dmitriy-vas/melody/tree/master/examples/chat)
+## [Example: chat](https://github.com/Dmitriy-Vas/melody/tree/master/examples/chat)
 
-[![Chat](https://cdn.rawgit.com/dmitriy-vas/melody/master/examples/chat/demo.gif "Demo")](https://github.com/dmitriy-vas/melody/tree/master/examples/chat)
+[![Chat](https://raw.githubusercontent.com/Dmitriy-Vas/melody/master/examples/chat/demo.gif "Demo")](https://github.com/Dmitriy-Vas/melody/tree/master/examples/chat)
 
 Using [Gin](https://github.com/gin-gonic/gin):
 ```go
@@ -32,7 +32,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/dmitriy-vas/melody/v1"
+	"github.com/Dmitriy-Vas/melody"
 	"net/http"
 )
 
@@ -63,7 +63,7 @@ package main
 import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/dmitriy-vas/melody/v1"
+	"github.com/Dmitriy-Vas/melody"
 	"net/http"
 )
 
@@ -92,16 +92,16 @@ func main() {
 }
 ```
 
-## [Example: gophers](https://github.com/dmitriy-vas/melody/tree/master/examples/gophers)
+## [Example: gophers](https://github.com/Dmitriy-Vas/melody/tree/master/examples/gophers)
 
-[![Gophers](https://cdn.rawgit.com/dmitriy-vas/melody/master/examples/gophers/demo.gif "Demo")](https://github.com/dmitriy-vas/melody/tree/master/examples/gophers)
+[![Gophers](https://raw.githubusercontent.com/Dmitriy-Vas/melody/master/examples/gophers/demo.gif "Demo")](https://github.com/Dmitriy-Vas/melody/tree/master/examples/gophers)
 
 ```go
 package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/dmitriy-vas/melody/v1"
+	"github.com/Dmitriy-Vas/melody"
 	"net/http"
 	"strconv"
 	"strings"
@@ -161,9 +161,9 @@ func main() {
 }
 ```
 
-### [More examples](https://github.com/dmitriy-vas/melody/tree/master/examples)
+### [More examples](https://github.com/Dmitriy-Vas/melody/tree/master/examples)
 
-## [Documentation](https://godoc.org/github.com/dmitriy-vas/melody)
+## [Documentation](https://godoc.org/github.com/Dmitriy-Vas/melody)
 
 ## Contributors
 

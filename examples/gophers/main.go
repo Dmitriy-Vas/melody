@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/dmitriy-vas/melody/v1"
+	"github.com/Dmitriy-Vas/melody"
 	"github.com/gin-gonic/gin"
 )
 

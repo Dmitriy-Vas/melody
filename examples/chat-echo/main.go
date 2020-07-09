@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dmitriy-vas/melody/v1"
+	"github.com/Dmitriy-Vas/melody"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"net/http"

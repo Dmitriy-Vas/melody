@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dmitriy-vas/melody/v1"
+	"github.com/Dmitriy-Vas/melody"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"

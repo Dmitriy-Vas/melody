@@ -1,4 +1,4 @@
-module github.com/dmitriy-vas/melody/v1
+module github.com/Dmitriy-Vas/melody
 
 go 1.14
 
