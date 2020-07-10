@@ -19,17 +19,12 @@ var (
 // Session wrapper around websocket connections.
 type Session struct {
 	Request *http.Request
-	Keys    map[string]interface{}
-	conn    *websocket.Conn
-	output  chan *envelope
-	melody  *Melody
-	open    bool
+	Conn    *websocket.Conn
+	Melody  *Melody
 	rwmutex *sync.RWMutex
-}
-
-// Conn returns underlying websocket connection
-func (s *Session) Conn() *websocket.Conn {
-	return s.conn
+	keys    map[string]interface{}
+	output  chan *envelope
+	open    bool
 }
 
 // Deadline always returns that there is no deadline (ok==false),
@@ -61,14 +56,14 @@ func (s *Session) Value(key interface{}) interface{} {
 
 func (s *Session) writeMessage(message *envelope) {
 	if s.closed() {
-		s.melody.errorHandler(s, errWriteToClosedSession)
+		s.Melody.errorHandler(s, errWriteToClosedSession)
 		return
 	}
 
 	select {
 	case s.output <- message:
 	default:
-		s.melody.errorHandler(s, errBufferIsFull)
+		s.Melody.errorHandler(s, errBufferIsFull)
 	}
 }
 
@@ -77,8 +72,8 @@ func (s *Session) writeRaw(message *envelope) error {
 		return errWriteToClosedSession
 	}
 
-	s.conn.SetWriteDeadline(time.Now().Add(s.melody.Config.WriteWait))
-	err := s.conn.WriteMessage(message.t, message.msg)
+	s.Conn.SetWriteDeadline(time.Now().Add(s.Melody.Config.WriteWait))
+	err := s.Conn.WriteMessage(message.t, message.msg)
 
 	if err != nil {
 		return err
@@ -100,7 +95,7 @@ func (s *Session) close() {
 		close(s.output)
 		s.open = false
 		s.rwmutex.Unlock()
-		s.conn.Close()
+		s.Conn.Close()
 	}
 }
 
@@ -109,7 +104,7 @@ func (s *Session) ping() {
 }
 
 func (s *Session) writePump() {
-	ticker := time.NewTicker(s.melody.Config.PingPeriod)
+	ticker := time.NewTicker(s.Melody.Config.PingPeriod)
 	defer ticker.Stop()
 
 loop:
@@ -123,7 +118,7 @@ loop:
 			err := s.writeRaw(msg)
 
 			if err != nil {
-				s.melody.errorHandler(s, err)
+				s.Melody.errorHandler(s, err)
 				break loop
 			}
 
@@ -132,11 +127,11 @@ loop:
 			}
 
 			if msg.t == websocket.TextMessage {
-				s.melody.messageSentHandler(s, msg.msg)
+				s.Melody.messageSentHandler(s, msg.msg)
 			}
 
 			if msg.t == websocket.BinaryMessage {
-				s.melody.messageSentHandlerBinary(s, msg.msg)
+				s.Melody.messageSentHandlerBinary(s, msg.msg)
 			}
 		case <-ticker.C:
 			s.ping()
@@ -145,35 +140,35 @@ loop:
 }
 
 func (s *Session) readPump() {
-	s.conn.SetReadLimit(s.melody.Config.MaxMessageSize)
-	s.conn.SetReadDeadline(time.Now().Add(s.melody.Config.PongWait))
+	s.Conn.SetReadLimit(s.Melody.Config.MaxMessageSize)
+	s.Conn.SetReadDeadline(time.Now().Add(s.Melody.Config.PongWait))
 
-	s.conn.SetPongHandler(func(string) error {
-		s.conn.SetReadDeadline(time.Now().Add(s.melody.Config.PongWait))
-		s.melody.pongHandler(s)
+	s.Conn.SetPongHandler(func(string) error {
+		s.Conn.SetReadDeadline(time.Now().Add(s.Melody.Config.PongWait))
+		s.Melody.pongHandler(s)
 		return nil
 	})
 
-	if s.melody.closeHandler != nil {
-		s.conn.SetCloseHandler(func(code int, text string) error {
-			return s.melody.closeHandler(s, code, text)
+	if s.Melody.closeHandler != nil {
+		s.Conn.SetCloseHandler(func(code int, text string) error {
+			return s.Melody.closeHandler(s, code, text)
 		})
 	}
 
 	for {
-		t, message, err := s.conn.ReadMessage()
+		t, message, err := s.Conn.ReadMessage()
 
 		if err != nil {
-			s.melody.errorHandler(s, err)
+			s.Melody.errorHandler(s, err)
 			break
 		}
 
 		if t == websocket.TextMessage {
-			s.melody.messageHandler(s, message)
+			s.Melody.messageHandler(s, message)
 		}
 
 		if t == websocket.BinaryMessage {
-			s.melody.messageHandlerBinary(s, message)
+			s.Melody.messageHandlerBinary(s, message)
 		}
 	}
 }
@@ -235,13 +230,13 @@ func (s *Session) CloseWithErr(err error) error {
 }
 
 // Set is used to store a new key/value pair exclusivelly for this session.
-// It also lazy initializes s.Keys if it was not used previously.
+// It also lazy initializes s.keys if it was not used previously.
 func (s *Session) Set(key string, value interface{}) {
 	s.rwmutex.Lock()
-	if s.Keys == nil {
-		s.Keys = make(map[string]interface{})
+	if s.keys == nil {
+		s.keys = make(map[string]interface{})
 	}
-	s.Keys[key] = value
+	s.keys[key] = value
 	s.rwmutex.Unlock()
 }
 
@@ -249,7 +244,7 @@ func (s *Session) Set(key string, value interface{}) {
 // If the value does not exists it returns (nil, false)
 func (s *Session) Get(key string) (value interface{}, exists bool) {
 	s.rwmutex.RLock()
-	value, exists = s.Keys[key]
+	value, exists = s.keys[key]
 	s.rwmutex.RUnlock()
 	return
 }
