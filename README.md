@@ -1,6 +1,6 @@
 # melody
 
-[![Build Status](https://travis-ci.org/Dmitriy-Vas/melody.svg)](https://travis-ci.org/Dmitriy-Vas/melody)
+[![Build Status](https://travis-ci.org/Dmitriy-Vas/melody.svg?branch=master)](https://travis-ci.org/Dmitriy-Vas/melody)
 [![Coverage Status](https://img.shields.io/coveralls/olahol/melody.svg?style=flat)](https://coveralls.io/r/olahol/melody)
 [![GoDoc](https://godoc.org/github.com/Dmitriy-Vas/melody?status.svg)](https://godoc.org/github.com/Dmitriy-Vas/melody)
 

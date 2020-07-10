@@ -6,4 +6,4 @@ go:
   - 1.14
 install:
   - go get github.com/gorilla/websocket
-script: go test
+script: go test -v

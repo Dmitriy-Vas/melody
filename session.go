@@ -9,6 +9,13 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// List of errors, which can be returned from the Session methods
+var (
+	errWriteToClosedSession error = errors.New("tried to write to a closed session")
+	errBufferIsFull         error = errors.New("session message buffer is full")
+	errSessionAlreadyClosed error = errors.New("session is already closed")
+)
+
 // Session wrapper around websocket connections.
 type Session struct {
 	Request *http.Request
@@ -54,20 +61,20 @@ func (s *Session) Value(key interface{}) interface{} {
 
 func (s *Session) writeMessage(message *envelope) {
 	if s.closed() {
-		s.melody.errorHandler(s, errors.New("tried to write to closed a session"))
+		s.melody.errorHandler(s, errWriteToClosedSession)
 		return
 	}
 
 	select {
 	case s.output <- message:
 	default:
-		s.melody.errorHandler(s, errors.New("session message buffer is full"))
+		s.melody.errorHandler(s, errBufferIsFull)
 	}
 }
 
 func (s *Session) writeRaw(message *envelope) error {
 	if s.closed() {
-		return errors.New("tried to write to a closed session")
+		return errWriteToClosedSession
 	}
 
 	s.conn.SetWriteDeadline(time.Now().Add(s.melody.Config.WriteWait))
@@ -174,7 +181,7 @@ func (s *Session) readPump() {
 // Write writes message to session.
 func (s *Session) Write(msg []byte) error {
 	if s.closed() {
-		return errors.New("session is closed")
+		return errWriteToClosedSession
 	}
 
 	s.writeMessage(&envelope{t: websocket.TextMessage, msg: msg})
@@ -185,7 +192,7 @@ func (s *Session) Write(msg []byte) error {
 // WriteBinary writes a binary message to session.
 func (s *Session) WriteBinary(msg []byte) error {
 	if s.closed() {
-		return errors.New("session is closed")
+		return errWriteToClosedSession
 	}
 
 	s.writeMessage(&envelope{t: websocket.BinaryMessage, msg: msg})
@@ -196,7 +203,7 @@ func (s *Session) WriteBinary(msg []byte) error {
 // Close closes session.
 func (s *Session) Close() error {
 	if s.closed() {
-		return errors.New("session is already closed")
+		return errSessionAlreadyClosed
 	}
 
 	s.writeMessage(&envelope{t: websocket.CloseMessage, msg: []byte{}})
@@ -208,10 +215,21 @@ func (s *Session) Close() error {
 // Use the FormatCloseMessage function to format a proper close message payload.
 func (s *Session) CloseWithMsg(msg []byte) error {
 	if s.closed() {
-		return errors.New("session is already closed")
+		return errSessionAlreadyClosed
 	}
 
 	s.writeMessage(&envelope{t: websocket.CloseMessage, msg: msg})
+
+	return nil
+}
+
+//CloseWithErr closes the session with the provided error.
+func (s *Session) CloseWithErr(err error) error {
+	if s.closed() {
+		return errSessionAlreadyClosed
+	}
+
+	s.writeMessage(&envelope{t: websocket.CloseMessage, msg: []byte(err.Error())})
 
 	return nil
 }
